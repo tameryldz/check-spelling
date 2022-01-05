@@ -162,6 +162,9 @@ comment_task() {
   fi
   fewer_misspellings_canary=$(mktemp)
   quit_without_error=1
+  if [ -z "$patch_add" ]; then
+    quit
+  fi
   more_misspellings
 }
 
@@ -486,7 +489,7 @@ define_variables() {
   fi
   bucket=${INPUT_BUCKET:-$bucket}
   project=${INPUT_PROJECT:-$project}
-  if [ -n "$junit" ]; then
+  if [ -n "$junit" ] || [ -n "$INPUT_QUIT_WITHOUT_ERROR" ]; then
     quit_without_error=1
   fi
   if [ -z "$bucket" ] && [ -z "$project" ] && [ -n "$INPUT_CONFIG" ]; then
@@ -1258,6 +1261,7 @@ spelling_body() {
 
 quit() {
   echo "::remove-matcher owner=check-spelling::"
+  echo "::set-output name=result_code::$1"
   cat $output_variables
   if [ -n "$quit_without_error" ]; then
     exit
